@@ -1,0 +1,12 @@
+{
+  "domain": "govee_heater",
+  "name": "Govee Heater",
+  "codeowners": [
+    "@kyleaupton"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/kyleaupton/ha-govee-heater",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/kyleaupton/ha-govee-heater/issues",
+  "version": "0.0.0"
+}
