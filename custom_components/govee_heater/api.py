@@ -8,49 +8,39 @@ import aiohttp
 import async_timeout
 
 
-class IntegrationBlueprintApiClientError(Exception):
+class GoveeHeaterApiClientError(Exception):
     """Exception to indicate a general API error."""
 
 
-class IntegrationBlueprintApiClientCommunicationError(
-    IntegrationBlueprintApiClientError
+class GoveeHeaterApiClientCommunicationError(
+    GoveeHeaterApiClientError
 ):
     """Exception to indicate a communication error."""
 
 
-class IntegrationBlueprintApiClientAuthenticationError(
-    IntegrationBlueprintApiClientError
+class GoveeHeaterApiClientAuthenticationError(
+    GoveeHeaterApiClientError
 ):
     """Exception to indicate an authentication error."""
 
 
-class IntegrationBlueprintApiClient:
+class GoveeHeaterApiClient:
     """Sample API Client."""
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        api_key: str,
         session: aiohttp.ClientSession,
     ) -> None:
         """Sample API Client."""
-        self._username = username
-        self._password = password
+        self._api_key = api_key
         self._session = session
 
-    async def async_get_data(self) -> any:
-        """Get data from the API."""
+    async def async_get_devices(self) -> any:
+        """Get devices."""
         return await self._api_wrapper(
-            method="get", url="https://jsonplaceholder.typicode.com/posts/1"
-        )
-
-    async def async_set_title(self, value: str) -> any:
-        """Get data from the API."""
-        return await self._api_wrapper(
-            method="patch",
-            url="https://jsonplaceholder.typicode.com/posts/1",
-            data={"title": value},
-            headers={"Content-type": "application/json; charset=UTF-8"},
+            method="get",
+            url="https://developer-api.govee.com/v1/appliance/devices"
         )
 
     async def _api_wrapper(
@@ -62,29 +52,39 @@ class IntegrationBlueprintApiClient:
     ) -> any:
         """Get information from the API."""
         try:
+            _headers = {
+                "Govee-API-Key": self._api_key
+            }
+
+            if headers != None:
+                _headers = {
+                    **_headers,
+                    **headers,
+                }
+
             async with async_timeout.timeout(10):
                 response = await self._session.request(
                     method=method,
                     url=url,
-                    headers=headers,
+                    headers=_headers,
                     json=data,
                 )
                 if response.status in (401, 403):
-                    raise IntegrationBlueprintApiClientAuthenticationError(
+                    raise GoveeHeaterApiClientAuthenticationError(
                         "Invalid credentials",
                     )
                 response.raise_for_status()
                 return await response.json()
 
         except asyncio.TimeoutError as exception:
-            raise IntegrationBlueprintApiClientCommunicationError(
+            raise GoveeHeaterApiClientCommunicationError(
                 "Timeout error fetching information",
             ) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
-            raise IntegrationBlueprintApiClientCommunicationError(
+            raise GoveeHeaterApiClientCommunicationError(
                 "Error fetching information",
             ) from exception
         except Exception as exception:  # pylint: disable=broad-except
-            raise IntegrationBlueprintApiClientError(
+            raise GoveeHeaterApiClientError(
                 "Something really wrong happened!"
             ) from exception
